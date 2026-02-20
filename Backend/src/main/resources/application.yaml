@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: ecommerce
+
+  # ─── Konekcija na PostgreSQL bazu ───────────────────────────────────────────
+  datasource:
+    url: jdbc:postgresql://localhost:5433/ecommerce
+    username: postgres
+    password: password123
+    driver-class-name: org.postgresql.Driver
+
+  # ─── JPA / Hibernate podešavanja ────────────────────────────────────────────
+  jpa:
+    hibernate:
+      # create-drop: briše i ponovo kreira tabele pri svakom startovanju (razvoj)
+      # update:      samo dodaje nove kolone/tabele, ne briše postojeće podatke
+      # validate:    samo proverava da li schema odgovara entitetima (produkcija)
+      ddl-auto: update
+    show-sql: true          # štampa SQL upite u konzoli — korisno za debug
+    properties:
+      hibernate:
+        format_sql: true    # lepo formatira SQL upite u konzoli
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# ─── JWT konfiguracija ──────────────────────────────────────────────────────
+# Ove vrednosti čitamo u JwtService-u pomoću @Value anotacije
+jwt:
+  # Secret key mora biti minimum 256 bita (32 karaktera) za HMAC-SHA256 algoritam
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  # Trajanje tokena u milisekundama: 86400000 ms = 24 sata
+  expiration: 86400000
+
+# ─── Server ─────────────────────────────────────────────────────────────────
+server:
+  port: 8080
