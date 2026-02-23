@@ -28,8 +28,12 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Dozvoljeni origin — React frontend na lokalnoj mašini
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        // Dozvoljeni origini — React frontend (Vite defaultno koristi port 5173 ili 5174)
+        config.setAllowedOrigins(List.of(
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:5174"
+        ));
 
         // Dozvoljene HTTP metode
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
