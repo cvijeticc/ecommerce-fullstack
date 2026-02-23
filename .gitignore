@@ -1,0 +1,22 @@
+# ─── Backend ────────────────────────────────────────────
+Backend/target/
+Backend/.mvn/wrapper/maven-wrapper.jar
+Backend/.claude/
+
+# ─── Frontend ───────────────────────────────────────────
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.env
+Frontend/.env.local
+
+# ─── OS fajlovi ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── IDE ────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+
+# ─── Logs ───────────────────────────────────────────────
+*.log

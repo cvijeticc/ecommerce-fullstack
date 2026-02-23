@@ -1,0 +1,26 @@
+/* Globalni stilovi — resetujemo Vite default tamnu temu */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  background: #f5f6fa;
+  color: #333;
+  min-height: 100vh;
+}
+
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+button:hover {
+  opacity: 0.9;
+}
