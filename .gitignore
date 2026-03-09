@@ -13,6 +13,11 @@ Frontend/.env.local
 .DS_Store
 Thumbs.db
 
+# ─── Windows rezervisana imena uređaja ──────────────────
+# "nul" je Windows ekvivalent za /dev/null — Git ne može da ga indeksira
+Backend/nul
+nul
+
 # ─── IDE ────────────────────────────────────────────────
 .idea/
 *.iml

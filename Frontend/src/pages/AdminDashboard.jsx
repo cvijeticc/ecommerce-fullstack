@@ -62,7 +62,8 @@ export default function AdminDashboard() {
       setEditingProductId(null);
       fetchProducts();
     } catch (err) {
-      showMessage('Greška: ' + (err.response?.data?.message || 'nepoznata greška'));
+      // Prikazujemo tačnu poruku sa servera, HTTP status, ili generičku grešku
+      showMessage('Greška: ' + (err.response?.data?.message || err.response?.data || `HTTP ${err.response?.status}` || err.message || 'nepoznata greška'));
     }
   };
 
@@ -96,7 +97,7 @@ export default function AdminDashboard() {
       setEditingCategoryId(null);
       fetchCategories();
     } catch (err) {
-      showMessage('Greška: ' + (err.response?.data?.message || 'nepoznata greška'));
+      showMessage('Greška: ' + (err.response?.data?.message || err.response?.data || `HTTP ${err.response?.status}` || err.message || 'nepoznata greška'));
     }
   };
 

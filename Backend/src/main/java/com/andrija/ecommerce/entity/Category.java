@@ -1,5 +1,6 @@
 package com.andrija.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,7 +37,13 @@ public class Category {
      *
      * cascade = ALL ovde NIJE postavljen — brisanje kategorije NE briše automatski
      * sve proizvode (to bi bio problem u produkciji).
+     *
+     * @JsonIgnore — sprečava LazyInitializationException.
+     * Bez ovoga, Jackson bi pokušao da serijalizuje listu proizvoda,
+     * ali Hibernate sesija je već zatvorena pa baca grešku.
+     * Kategorija ne treba da vraća svoje proizvode u odgovoru.
      */
+    @JsonIgnore
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> products;
 }

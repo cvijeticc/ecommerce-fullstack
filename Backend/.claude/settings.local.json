@@ -7,7 +7,15 @@
       "Bash(npm --version:*)",
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: Full-stack Ecommerce projekat\n\nBackend: Spring Boot 3.5, JWT security, PostgreSQL\nFrontend: React + Vite, Axios, React Router\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(git reset:*)",
+      "Bash(start \"SpringBoot\" cmd /c \"mvnw.cmd spring-boot:run > ..\\\\spring-boot.log 2>&1\")",
+      "Bash(timeout /t 20 /nobreak)",
+      "Bash(powershell:*)"
     ]
   }
 }

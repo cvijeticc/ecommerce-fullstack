@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
+import org.springframework.security.config.Customizer;
 
 /**
  * Centralna konfiguracija Spring Security-ja.
@@ -45,6 +46,12 @@ public class SecurityConfig {
         http
             // Gasimo CSRF — ne treba nam jer koristimo JWT (stateless), ne session cookie
             .csrf(AbstractHttpConfigurer::disable)
+
+            // CORS — koristimo CorsConfigurationSource @Bean iz CorsConfig klase.
+            // Customizer.withDefaults() znači: pronađi CorsConfigurationSource bean automatski.
+            // Ovo mora biti UNUTAR Security filter chain-a da OPTIONS preflight zahtevi
+            // ne budu blokirani pre autentifikacije.
+            .cors(Customizer.withDefaults())
 
             // Definišemo pravila pristupa za endpointove
             .authorizeHttpRequests(auth -> auth
