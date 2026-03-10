@@ -32,7 +32,10 @@ export default function Navbar() {
             // Ulogovan korisnik
             <>
               <Link to="/cart" style={styles.link}>🛒 Korpa</Link>
-              <Link to="/orders" style={styles.link}>Porudžbine</Link>
+              {/* Admin koristi tab unutar Admin Dashboard-a, ne korisničku stranicu */}
+              {!isAdmin() && (
+                <Link to="/orders" style={styles.link}>Porudžbine</Link>
+              )}
               {isAdmin() && (
                 <Link to="/admin" style={styles.adminLink}>⚙ Admin</Link>
               )}

@@ -154,7 +154,12 @@ public class OrderService {
 
     /**
      * Admin: vraća SVE porudžbine od SVIH korisnika.
+     *
+     * @Transactional(readOnly = true) — drži Hibernate sesiju otvorenu dok se
+     * učitavaju LAZY relacije (order.getUser(), order.getItems()).
+     * readOnly = true je optimizacija za SELECT operacije.
      */
+    @Transactional(readOnly = true)
     public List<OrderDTO> getAllOrders() {
         return orderRepository.findAll()
                 .stream()

@@ -41,7 +41,9 @@ export default function AdminDashboard() {
 
   const fetchProducts = () => api.get('/products?size=100').then(r => setProducts(r.data.content));
   const fetchCategories = () => api.get('/categories').then(r => setCategories(r.data));
-  const fetchOrders = () => api.get('/admin/orders').then(r => setOrders(r.data));
+  const fetchOrders = () => api.get('/admin/orders')
+    .then(r => setOrders(r.data))
+    .catch(err => showMessage('Greška pri učitavanju porudžbina: ' + (err.response?.data?.message || `HTTP ${err.response?.status}` || err.message)));
 
   const showMessage = (msg) => { setMessage(msg); setTimeout(() => setMessage(''), 3000); };
 
