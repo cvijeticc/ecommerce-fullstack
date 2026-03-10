@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
 
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success'); // 'success' | 'error'
 
   // Učitavamo podatke pri otvaranju stranice
   useEffect(() => {
@@ -43,9 +44,13 @@ export default function AdminDashboard() {
   const fetchCategories = () => api.get('/categories').then(r => setCategories(r.data));
   const fetchOrders = () => api.get('/admin/orders')
     .then(r => setOrders(r.data))
-    .catch(err => showMessage('Greška pri učitavanju porudžbina: ' + (err.response?.data?.message || `HTTP ${err.response?.status}` || err.message)));
+    .catch(err => showMessage('Greška pri učitavanju porudžbina: ' + (err.response?.data?.message || `HTTP ${err.response?.status}` || err.message), 'error'));
 
-  const showMessage = (msg) => { setMessage(msg); setTimeout(() => setMessage(''), 3000); };
+  const showMessage = (msg, type = 'success') => {
+    setMessage(msg);
+    setMessageType(type);
+    setTimeout(() => setMessage(''), 5000);
+  };
 
   // ─── Operacije sa proizvodima ─────────────────────────────────────────────
 
@@ -64,8 +69,7 @@ export default function AdminDashboard() {
       setEditingProductId(null);
       fetchProducts();
     } catch (err) {
-      // Prikazujemo tačnu poruku sa servera, HTTP status, ili generičku grešku
-      showMessage('Greška: ' + (err.response?.data?.message || err.response?.data || `HTTP ${err.response?.status}` || err.message || 'nepoznata greška'));
+      showMessage('Greška: ' + (err.response?.data?.message || err.response?.data || `HTTP ${err.response?.status}` || err.message || 'nepoznata greška'), 'error');
     }
   };
 
@@ -78,9 +82,13 @@ export default function AdminDashboard() {
 
   const deleteProduct = async (id) => {
     if (!window.confirm('Obriši proizvod?')) return;
-    await api.delete(`/products/${id}`);
-    showMessage('Proizvod obrisan ✓');
-    fetchProducts();
+    try {
+      await api.delete(`/products/${id}`);
+      showMessage('Proizvod obrisan ✓');
+      fetchProducts();
+    } catch (err) {
+      showMessage('Greška: ' + (err.response?.data?.message || `HTTP ${err.response?.status}` || err.message), 'error');
+    }
   };
 
   // ─── Operacije sa kategorijama ────────────────────────────────────────────
@@ -99,15 +107,19 @@ export default function AdminDashboard() {
       setEditingCategoryId(null);
       fetchCategories();
     } catch (err) {
-      showMessage('Greška: ' + (err.response?.data?.message || err.response?.data || `HTTP ${err.response?.status}` || err.message || 'nepoznata greška'));
+      showMessage('Greška: ' + (err.response?.data?.message || err.response?.data || `HTTP ${err.response?.status}` || err.message || 'nepoznata greška'), 'error');
     }
   };
 
   const deleteCategory = async (id) => {
     if (!window.confirm('Obriši kategoriju?')) return;
-    await api.delete(`/categories/${id}`);
-    showMessage('Kategorija obrisana ✓');
-    fetchCategories();
+    try {
+      await api.delete(`/categories/${id}`);
+      showMessage('Kategorija obrisana ✓');
+      fetchCategories();
+    } catch (err) {
+      showMessage('Greška: ' + (err.response?.data?.message || `HTTP ${err.response?.status}` || err.message), 'error');
+    }
   };
 
   // ─── Promena statusa porudžbine ───────────────────────────────────────────
@@ -118,7 +130,7 @@ export default function AdminDashboard() {
       showMessage('Status ažuriran ✓');
       fetchOrders();
     } catch (err) {
-      showMessage('Greška pri ažuriranju statusa');
+      showMessage('Greška pri ažuriranju statusa: ' + (err.response?.data?.message || `HTTP ${err.response?.status}` || err.message), 'error');
     }
   };
 
@@ -126,7 +138,7 @@ export default function AdminDashboard() {
     <div style={styles.container}>
       <h1 style={styles.title}>Admin Dashboard</h1>
 
-      {message && <div style={styles.message}>{message}</div>}
+      {message && <div style={messageType === 'error' ? styles.errorMessage : styles.message}>{message}</div>}
 
       {/* Tabovi */}
       <div style={styles.tabs}>
@@ -267,4 +279,5 @@ const styles = {
   deleteBtn: { padding: '0.3rem 0.7rem', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' },
   statusSelect: { padding: '0.3rem', border: '1px solid #ddd', borderRadius: '4px', fontSize: '0.85rem' },
   message: { background: '#d4edda', color: '#155724', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem' },
+  errorMessage: { background: '#f8d7da', color: '#721c24', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem' },
 };

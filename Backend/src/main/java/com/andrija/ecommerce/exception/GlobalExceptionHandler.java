@@ -94,6 +94,20 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 409 Conflict — operacija nije dozvoljena zbog trenutnog stanja podataka.
+     * Primer: pokušaj brisanja kategorije koja ima proizvode.
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    /**
      * 500 Internal Server Error — neočekivana greška.
      * Hvatamo sve ostale izuzetke da aplikacija ne "padne" bez poruke.
      */

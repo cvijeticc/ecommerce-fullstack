@@ -24,6 +24,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Svi proizvodi po kategoriji (za filtriranje na frontendu)
     List<Product> findByCategoryId(Long categoryId);
 
+    // Provera postoje li proizvodi u kategoriji (za validaciju pre brisanja)
+    boolean existsByCategoryId(Long categoryId);
+
     // Pretraga po imenu — paginovano, case-insensitive
     // %:name% znači "sadrži taj string" (LIKE %...%)
     @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")

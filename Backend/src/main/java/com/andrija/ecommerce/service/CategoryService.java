@@ -5,6 +5,7 @@ import com.andrija.ecommerce.entity.Category;
 import com.andrija.ecommerce.exception.DuplicateEmailException;
 import com.andrija.ecommerce.exception.ResourceNotFoundException;
 import com.andrija.ecommerce.repository.CategoryRepository;
+import com.andrija.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     /**
      * Vraća sve kategorije — koristi se za prikaz filtera na frontendu.
@@ -71,10 +73,20 @@ public class CategoryService {
 
     /**
      * Briše kategoriju po ID-ju.
+     *
+     * Baca grešku ako kategorija ima proizvode — ne možemo je obrisati
+     * dok postoje proizvodi koji su vezani za nju (FK constraint u bazi).
+     * Admin mora prvo da premesti ili obriše te proizvode.
      */
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new ResourceNotFoundException("Kategorija nije pronađena sa id: " + id);
+        }
+        if (productRepository.existsByCategoryId(id)) {
+            throw new IllegalStateException(
+                "Ne možete obrisati kategoriju koja ima proizvode. " +
+                "Prvo uklonite ili premestite sve proizvode iz ove kategorije."
+            );
         }
         categoryRepository.deleteById(id);
     }
