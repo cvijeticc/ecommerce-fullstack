@@ -56,6 +56,13 @@ public class SecurityConfig {
             // Definišemo pravila pristupa za endpointove
             .authorizeHttpRequests(auth -> auth
 
+                // Swagger UI i OpenAPI dokumentacija — javno dostupni
+                .requestMatchers(
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**"
+                ).permitAll()
+
                 // Javni endpointovi — svako može, bez tokena
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()

@@ -1,0 +1,51 @@
+version: '3.9'
+
+# docker-compose.yml — pokreće celu aplikaciju jednom komandom: docker-compose up
+#
+# Servisi:
+#   1. db       — PostgreSQL baza podataka
+#   2. backend  — Spring Boot aplikacija
+#
+# Redosled pokretanja: db mora biti zdrav pre nego backend startuje (depends_on + healthcheck)
+
+services:
+
+  # ─── PostgreSQL baza ────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine          # Lightweight PostgreSQL image
+    container_name: ecommerce-db
+    environment:
+      POSTGRES_DB: ecommerce           # Ime baze
+      POSTGRES_USER: postgres          # Korisničko ime
+      POSTGRES_PASSWORD: password123   # Lozinka (u produkciji koristiti secrets!)
+    ports:
+      - "5433:5432"                    # Host:Container (5433 jer možda imaš lokalni PG na 5432)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Podaci se čuvaju između restartova
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ecommerce"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Spring Boot backend ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./Backend              # Dockerfile se nalazi u Backend/ folderu
+      dockerfile: Dockerfile
+    container_name: ecommerce-backend
+    ports:
+      - "8080:8080"                   # Spring Boot port
+    environment:
+      # Prepisujemo application.yaml vrednosti environment varijablama
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ecommerce
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update    # 'update' u produkciji (ne 'create'!)
+    depends_on:
+      db:
+        condition: service_healthy    # Čeka dok PostgreSQL ne bude spreman
+
+# ─── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:                      # Named volume — podaci opstaju i posle docker-compose down
