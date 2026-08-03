@@ -10,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,9 +27,19 @@ import org.springframework.security.config.Customizer;
  *
  * @Configuration — označava da ova klasa definiše Spring Bean-ove
  * @EnableWebSecurity — aktivira Spring Security web sigurnost
+ * @EnableMethodSecurity — aktivira @PreAuthorize anotacije na nivou metoda
+ *
+ * Dva nivoa autorizacije u ovom projektu:
+ * 1. URL-based (dole, authorizeHttpRequests) — gruba pravila po putanji
+ * 2. Method-based (@PreAuthorize u kontrolerima) — precizno pravilo uz samu metodu
+ *
+ * Zašto oba? URL pravila su centralizovana i pregledna, ali se lako "promaše"
+ * kada admin operacija ne živi pod /api/admin/** putanjom — što je ovde bio slučaj
+ * sa POST/PUT/DELETE na /api/products i /api/categories.
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -73,6 +84,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                 // Sve ostalo — mora biti autentifikovano (ulogovan korisnik, bilo koji role)
+                //
+                // PAŽNJA: write operacije na /api/products i /api/categories NE padaju
+                // pod /api/admin/**, pa bi ih ovo pravilo pustilo svakom ulogovanom korisniku.
+                // Zato su one dodatno zaštićene sa @PreAuthorize("hasRole('ADMIN')")
+                // u ProductController-u i CategoryController-u.
                 .anyRequest().authenticated()
             )
 

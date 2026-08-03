@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +17,10 @@ import java.util.List;
  * GET endpointovi — javni (konfigurisano u SecurityConfig):
  * .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
  *
- * POST/PUT/DELETE endpointovi — samo ADMIN:
- * .requestMatchers("/api/admin/**").hasRole("ADMIN")
- * NAPOMENA: Admin CRUD za kategorije je ovde na /api/categories,
- * ali zaštita je kroz hasRole na nivou samog kontrolera
- * (alternativno: možemo koristiti @PreAuthorize anotaciju).
+ * POST/PUT/DELETE endpointovi — samo ADMIN, kroz @PreAuthorize na svakoj metodi.
+ * Pravilo .requestMatchers("/api/admin/**").hasRole("ADMIN") iz SecurityConfig-a
+ * NE pokriva ove putanje (one su /api/categories/**), pa bi bez @PreAuthorize
+ * svaki ulogovan kupac mogao da menja i briše kategorije.
  */
 @RestController
 @RequestMapping("/api/categories")
@@ -42,6 +42,7 @@ public class CategoryController {
      * POST /api/categories
      * Kreira novu kategoriju — samo ADMIN.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO request) {
         CategoryDTO created = categoryService.createCategory(request);
@@ -54,6 +55,7 @@ public class CategoryController {
      *
      * @PathVariable — čita {id} iz URL putanje
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDTO> updateCategory(
             @PathVariable Long id,
@@ -69,6 +71,7 @@ public class CategoryController {
      *
      * @return 204 No Content — uspešno, ali nema tela odgovora
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);

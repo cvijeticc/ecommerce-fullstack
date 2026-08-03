@@ -6,6 +6,7 @@ import com.andrija.ecommerce.dto.RegisterRequest;
 import com.andrija.ecommerce.entity.User;
 import com.andrija.ecommerce.enums.Role;
 import com.andrija.ecommerce.exception.DuplicateEmailException;
+import com.andrija.ecommerce.exception.ResourceNotFoundException;
 import com.andrija.ecommerce.repository.UserRepository;
 import com.andrija.ecommerce.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -93,8 +94,10 @@ public class AuthService {
         );
 
         // Korak 3: Ako smo stigli ovde, autentifikacija je uspela — učitavamo korisnika
+        // U teoriji se ne može desiti (authenticate() je već našao korisnika), ali bacamo
+        // tipiziran izuzetak umesto golog orElseThrow() koji bi dao NoSuchElementException → 500
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(); // ne može se desiti jer authenticate() nije bacio grešku
+                .orElseThrow(() -> new ResourceNotFoundException("Korisnik nije pronađen"));
 
         // Korak 4: Generišemo token i vraćamo odgovor
         String token = jwtService.generateToken(user);

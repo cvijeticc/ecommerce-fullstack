@@ -1,7 +1,10 @@
 package com.andrija.ecommerce.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,9 +23,56 @@ import java.util.Map;
  *
  * Bez ovoga, Spring bi vratio generičku 500 Internal Server Error poruku
  * koja ne govori frontendu šta je pošlo naopako.
+ *
+ * VAŽNO — odnos sa Spring Security-jem:
+ * Ova klasa radi unutar DispatcherServlet-a, dakle NAKON security filtera.
+ * Izuzeci koji nastanu u toku obrade zahteva (npr. BadCredentialsException iz
+ * AuthenticationManager.authenticate(), ili AccessDeniedException iz @PreAuthorize)
+ * bivaju uhvaćeni OVDE, pre nego što stignu do Spring Security-jevog
+ * ExceptionTranslationFilter-a. Zato oni moraju imati svoje eksplicitne handlere —
+ * inače ih proguta catch-all handleAllExceptions() i vrati 500 umesto 401/403.
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * 401 Unauthorized — autentifikacija nije uspela.
+     * Primer: pogrešna lozinka ili nepostojeći email pri loginu.
+     *
+     * Poruka je NAMERNO generička: ne otkrivamo da li je pogrešan email
+     * ili lozinka, jer bi to napadaču omogućilo da nabraja postojeće naloge
+     * (user enumeration). Detalj ide u log na serveru, ne klijentu.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        log.warn("Neuspela autentifikacija: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Pogrešan email ili lozinka",
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    /**
+     * 403 Forbidden — korisnik JESTE ulogovan, ali nema pravo na ovu operaciju.
+     * Primer: CUSTOMER pokušava DELETE /api/products/{id} (traži se ROLE_ADMIN).
+     *
+     * Razlika 401 vs 403:
+     * 401 = "ne znam ko si" (nema/neispravan token)
+     * 403 = "znam ko si, ali ti ne smeš"
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("Odbijen pristup: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                "Nemate dozvolu za ovu akciju",
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
 
     /**
      * 404 Not Found — resurs nije pronađen.
@@ -110,12 +160,17 @@ public class GlobalExceptionHandler {
     /**
      * 500 Internal Server Error — neočekivana greška.
      * Hvatamo sve ostale izuzetke da aplikacija ne "padne" bez poruke.
+     *
+     * Klijentu NE vraćamo ex.getMessage() — interna poruka izuzetka može da oda
+     * detalje implementacije (imena klasa, SQL upite, putanje na serveru).
+     * Pun stack trace ide u log, klijent dobija samo generičku poruku.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        log.error("Neočekivana greška", ex);
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Interna greška servera: " + ex.getMessage(),
+                "Interna greška servera",
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

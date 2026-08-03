@@ -15,7 +15,15 @@
       "Bash(git reset:*)",
       "Bash(start \"SpringBoot\" cmd /c \"mvnw.cmd spring-boot:run > ..\\\\spring-boot.log 2>&1\")",
       "Bash(timeout /t 20 /nobreak)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(node create_golden_gate.js)",
+      "Bash(npm root -g)",
+      "Bash(node -e \"require\\(''C:/Users/andri/AppData/Roaming/npm/node_modules/pptxgenjs''\\); console.log\\(''ok''\\)\")",
+      "Bash(python \"C:\\\\Users\\\\andri\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\b88c7936-6ef0-43bd-8284-39a5f5938ddc\\\\e96922b8-176e-4f0b-9a3e-eef655aa5a1f\\\\skills\\\\pptx\\\\scripts\\\\office\\\\soffice.py\" --headless --convert-to pdf \"C:\\\\Users\\\\andri\\\\Downloads\\\\golden_gate_bridge.pptx\")",
+      "Bash(where soffice)",
+      "Bash(where pdftoppm)",
+      "Bash(python -m markitdown \"C:\\\\Users\\\\andri\\\\Downloads\\\\golden_gate_bridge.pptx\")",
+      "Bash(pip install \"markitdown[pptx]\" -q)"
     ]
   }
 }

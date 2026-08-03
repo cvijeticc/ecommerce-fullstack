@@ -6,9 +6,14 @@ import axios from 'axios';
  * Zašto ne koristimo direktno axios.get/post?
  * Ovde definišemo baseURL jednom — ne moramo ga ponavljati u svakom pozivu.
  * Interceptor automatski dodaje JWT token na svaki zahtev.
+ *
+ * baseURL se čita iz environment varijable (fajl .env, vidi .env.example).
+ * Vite ubacuje samo varijable koje počinju sa VITE_ i to u BUILD vremenu —
+ * zato ovo nije tajna i ne sme se koristiti za lozinke ili API ključeve.
+ * Bez ovoga aplikacija bi mogla da se builduje samo za localhost.
  */
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // Spring Boot server
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },

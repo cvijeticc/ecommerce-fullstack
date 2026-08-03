@@ -128,7 +128,14 @@ public class OrderService {
     /**
      * Vraća sve porudžbine trenutno ulogovanog korisnika.
      * Sortirane od najnovije ka najstarijoj.
+     *
+     * @Transactional(readOnly = true) je OBAVEZAN, ne kozmetika:
+     * toDTO() dohvata LAZY relacije (order.getUser(), order.getItems()).
+     * Bez transakcije to radi samo zato što je spring.jpa.open-in-view po defaultu
+     * uključen (drži Hibernate sesiju otvorenom do kraja HTTP odgovora).
+     * Kada bi se open-in-view isključio, ovde bi puklo sa LazyInitializationException.
      */
+    @Transactional(readOnly = true)
     public List<OrderDTO> getMyOrders() {
         User currentUser = getCurrentUser();
         return orderRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId())
@@ -142,7 +149,10 @@ public class OrderService {
      *
      * findByIdAndUserId — sigurnosna provera!
      * Korisnik može videti samo SVOJU porudžbinu, ne tuđu.
+     * Provera vlasništva je u samom upitu (WHERE id = ? AND user_id = ?),
+     * pa tuđa porudžbina vraća 404 — ne otkrivamo ni da postoji.
      */
+    @Transactional(readOnly = true)
     public OrderDTO getMyOrderById(Long orderId) {
         User currentUser = getCurrentUser();
         Order order = orderRepository.findByIdAndUserId(orderId, currentUser.getId())

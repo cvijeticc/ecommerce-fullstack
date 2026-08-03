@@ -25,3 +25,7 @@ nul
 
 # ─── Logs ───────────────────────────────────────────────
 *.log
+
+# ─── Lični materijal za učenje ──────────────────────────
+# Beleške za pripremu intervjua — ne idu u repozitorijum koji vide poslodavci
+UCENJE/

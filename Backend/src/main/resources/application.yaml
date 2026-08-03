@@ -3,10 +3,14 @@ spring:
     name: ecommerce
 
   # ─── Konekcija na PostgreSQL bazu ───────────────────────────────────────────
+  # Sintaksa ${ENV_VAR:default} — Spring prvo traži environment varijablu,
+  # pa tek ako je nema koristi vrednost posle dvotačke.
+  # Tako lokalni razvoj radi bez ikakvog podešavanja, a u produkciji se
+  # kredencijali ubacuju spolja (docker-compose, CI/CD secrets) bez menjanja koda.
   datasource:
-    url: jdbc:postgresql://localhost:5433/ecommerce
-    username: postgres
-    password: password123
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/ecommerce}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:password123}
     driver-class-name: org.postgresql.Driver
 
   # ─── JPA / Hibernate podešavanja ────────────────────────────────────────────
@@ -25,10 +29,15 @@ spring:
 # ─── JWT konfiguracija ──────────────────────────────────────────────────────
 # Ove vrednosti čitamo u JwtService-u pomoću @Value anotacije
 jwt:
-  # Secret key mora biti minimum 256 bita (32 karaktera) za HMAC-SHA256 algoritam
-  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  # Secret key mora biti minimum 256 bita za HMAC-SHA256 algoritam.
+  # Zapisan je kao hex string: 64 hex karaktera = 32 bajta = 256 bita.
+  #
+  # Default vrednost ispod je SAMO za lokalni razvoj i nalazi se u git-u —
+  # u produkciji se OBAVEZNO postavlja JWT_SECRET environment varijabla.
+  # Ko zna ovu tajnu može da potpiše validan token za bilo kog korisnika.
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
   # Trajanje tokena u milisekundama: 86400000 ms = 24 sata
-  expiration: 86400000
+  expiration: ${JWT_EXPIRATION:86400000}
 
 # ─── Server ─────────────────────────────────────────────────────────────────
 server:

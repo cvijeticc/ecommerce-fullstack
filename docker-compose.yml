@@ -1,6 +1,7 @@
-version: '3.9'
-
-# docker-compose.yml — pokreće celu aplikaciju jednom komandom: docker-compose up
+# docker-compose.yml — pokreće celu aplikaciju jednom komandom: docker compose up
+#
+# NAPOMENA: "version:" ključ je namerno izostavljen — u Compose V2 je zastareo
+# i ispisuje upozorenje pri svakom pokretanju.
 #
 # Servisi:
 #   1. db       — PostgreSQL baza podataka
@@ -37,11 +38,15 @@ services:
     ports:
       - "8080:8080"                   # Spring Boot port
     environment:
-      # Prepisujemo application.yaml vrednosti environment varijablama
+      # Prepisujemo application.yaml vrednosti environment varijablama.
+      # Host je "db" — ime servisa, Docker ga razrešava kroz internu mrežu.
+      # Port je 5432 (interni), ne 5433 — 5433 je samo mapiranje ka host mašini.
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ecommerce
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password123
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-password123}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update    # 'update' u produkciji (ne 'create'!)
+      # JWT tajna — u pravoj produkciji dolazi iz secrets managera, ne iz compose fajla
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     depends_on:
       db:
         condition: service_healthy    # Čeka dok PostgreSQL ne bude spreman

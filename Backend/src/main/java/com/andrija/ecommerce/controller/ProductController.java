@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +18,12 @@ import java.util.List;
 /**
  * Kontroler za upravljanje proizvodima.
  *
- * Javni GET endpointovi — svi mogu pregledati proizvode.
- * Admin POST/PUT/DELETE endpointovi — SecurityConfig ih štiti.
+ * Javni GET endpointovi — svi mogu pregledati proizvode
+ * (SecurityConfig: .requestMatchers(GET, "/api/products/**").permitAll()).
+ *
+ * POST/PUT/DELETE — samo ADMIN, zaštićeno sa @PreAuthorize na svakoj metodi.
+ * Ne oslanjamo se na SecurityConfig jer ove putanje NE počinju sa /api/admin/**,
+ * pa bi ih pravilo .anyRequest().authenticated() pustilo svakom ulogovanom korisniku.
  *
  * Paginacija: Spring Data Web automatski parsira ?page=0&size=10&sort=name,asc
  * iz URL parametara u Pageable objekat.
@@ -72,10 +77,14 @@ public class ProductController {
     /**
      * POST /api/products
      * Kreira novi proizvod — samo ADMIN.
-     * SecurityConfig: admin upiti zahtevaju "ROLE_ADMIN".
+     *
+     * @PreAuthorize se izvršava PRE ulaska u metodu (Spring AOP proxy).
+     * hasRole('ADMIN') traži authority "ROLE_ADMIN" — prefiks se dodaje automatski.
+     * Ako korisnik nema tu rolu, baca se AccessDeniedException → 403.
      *
      * @return 201 Created sa kreiranim proizvodom
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO request) {
         ProductDTO created = productService.createProduct(request);
@@ -86,6 +95,7 @@ public class ProductController {
      * PUT /api/products/{id}
      * Ažurira postojeći proizvod — samo ADMIN.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ProductDTO> updateProduct(
             @PathVariable Long id,
@@ -98,6 +108,7 @@ public class ProductController {
      * DELETE /api/products/{id}
      * Briše proizvod — samo ADMIN.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);

@@ -75,7 +75,7 @@ public class ProductService {
 
     /**
      * Kreira novi proizvod.
-     * Samo ADMIN (zaštićeno u SecurityConfig-u).
+     * Samo ADMIN — zaštićeno sa @PreAuthorize("hasRole('ADMIN')") u ProductController-u.
      */
     public ProductDTO createProduct(ProductDTO request) {
         Category category = null;
