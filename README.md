@@ -1,11 +1,11 @@
-# 🛒 EShop — Full Stack E-Commerce Application
+# EShop — Full Stack E-Commerce Application
 
 A full-stack e-commerce web application built with **Spring Boot** (backend) and **React** (frontend).
 Features JWT authentication, role-based access control, product catalog, shopping cart, and order management.
 
 ---
 
-## ✨ Features
+## Features
 
 ### Customer
 - Browse and search products with pagination
@@ -22,7 +22,7 @@ Features JWT authentication, role-based access control, product catalog, shoppin
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -36,7 +36,7 @@ Features JWT authentication, role-based access control, product catalog, shoppin
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -68,7 +68,7 @@ Features JWT authentication, role-based access control, product catalog, shoppin
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -138,7 +138,7 @@ UPDATE users SET role = 'ADMIN' WHERE email = 'your@email.com';
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Auth
 | Method | Endpoint | Access | Description |
@@ -189,7 +189,7 @@ UPDATE users SET role = 'ADMIN' WHERE email = 'your@email.com';
 
 ---
 
-## 🧪 Running Tests
+## Running Tests
 
 ```bash
 cd Backend
@@ -211,7 +211,7 @@ running PostgreSQL — start it with `docker compose up -d db` first.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Ecommerce full stack/
@@ -239,7 +239,7 @@ Ecommerce full stack/
 
 ---
 
-## 🔐 Security
+## Security
 
 - Passwords hashed with **BCrypt** (one-way, salted, never stored as plain text)
 - **JWT** tokens — stateless, server never stores sessions (`SessionCreationPolicy.STATELESS`)
@@ -265,6 +265,6 @@ Flyway migrations (schema is managed by `ddl-auto: update`).
 
 ---
 
-## 📝 License
+## License
 
 This project is for educational/portfolio purposes.
