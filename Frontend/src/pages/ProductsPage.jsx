@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import Toast from '../components/Toast';
 
 /**
  * Stranica sa listom svih proizvoda.
@@ -12,7 +13,9 @@ import api from '../services/api';
  * - Dodavanje u korpu
  */
 export default function ProductsPage() {
-  const navigate = useNavigate();
+  // Iz Context-a čitamo da li je neko ulogovan — na osnovu toga znamo da li
+  // uopšte ima smisla slati zahtev za dodavanje u korpu.
+  const { user } = useAuth();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -21,7 +24,16 @@ export default function ProductsPage() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+
+  // toast = { text, type } ili null kad nema poruke
+  const [toast, setToast] = useState(null);
+
+  /**
+   * useCallback pamti istu funkciju između rendera (prazan dep niz = nikad se
+   * ne menja, jer je setToast stabilan). Bez toga bi Toast pri svakom renderu
+   * dobio novu onClose funkciju i resetovao svoj tajmer.
+   */
+  const closeToast = useCallback(() => setToast(null), []);
 
   // Učitavamo kategorije jednom pri otvaranju stranice
   useEffect(() => {
@@ -57,27 +69,49 @@ export default function ProductsPage() {
     }
   };
 
+  const PORUKA_PRIJAVA = 'Uloguj se prvo da bi dodao proizvod u korpu.';
+
   // Dodavanje u korpu — POST /api/cart
   const addToCart = async (productId) => {
+    // Neulogovan korisnik — nema svrhe slati zahtev za koji unapred znamo da pada
+    if (!user) {
+      setToast({ text: PORUKA_PRIJAVA, type: 'error' });
+      return;
+    }
+
     try {
       await api.post('/cart', { productId, quantity: 1 });
-      setMessage('Proizvod dodat u korpu! 🛒');
-      setTimeout(() => setMessage(''), 2000);
+      setToast({ text: 'Proizvod dodat u korpu! 🛒', type: 'success' });
     } catch (err) {
-      if (err.response?.status === 401) {
-        navigate('/login'); // nije ulogovan
+      const status = err.response?.status;
+
+      /**
+       * Zašto proveravamo i 403, a ne samo 401?
+       * Zato što anoniman zahtev kod nas vraća 403, ne 401. U SecurityConfig-u
+       * nema ni formLogin ni httpBasic, pa Spring Security nema šta da "ponudi"
+       * neulogovanom korisniku i pada na podrazumevani Http403ForbiddenEntryPoint.
+       * Ranije je ovde stajalo samo `status === 401`, taj uslov nikad nije bio
+       * tačan i korisnik je dobijao generičku poruku "Greška pri dodavanju".
+       */
+      if (status === 401 || status === 403) {
+        setToast({ text: PORUKA_PRIJAVA, type: 'error' });
       } else {
-        setMessage('Greška pri dodavanju u korpu.');
+        setToast({ text: 'Greška pri dodavanju u korpu.', type: 'error' });
       }
     }
   };
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Proizvodi</h1>
+      {/* Toast je position: fixed — stoji preko sadržaja i vidi se i kad je
+          korisnik skrolovan na dno stranice */}
+      <Toast
+        message={toast?.text}
+        type={toast?.type}
+        onClose={closeToast}
+      />
 
-      {/* Poruka o uspešnom dodavanju */}
-      {message && <div style={styles.message}>{message}</div>}
+      <h1 style={styles.title}>Proizvodi</h1>
 
       {/* Filteri */}
       <div style={styles.filters}>
@@ -179,5 +213,4 @@ const styles = {
   pageInfo: { color: '#666' },
   loading: { textAlign: 'center', color: '#666', padding: '2rem' },
   empty: { textAlign: 'center', color: '#888', padding: '2rem' },
-  message: { background: '#d4edda', color: '#155724', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem' },
 };
