@@ -47,11 +47,19 @@ api.interceptors.request.use(
  * Ako server vrati 401 (token istekao ili nevažeći):
  * → brišemo token iz localStorage
  * → preusmeravamo korisnika na /login
+ *
+ * VAŽNO: 401 sa /auth/** endpointa NE znači "sesija je istekla" nego
+ * "pogrešan email ili lozinka". Ako bismo i tu radili redirect, browser bi
+ * uradio pun reload stranice, React state bi se obrisao i poruka o grešci bi
+ * nestala pre nego što je korisnik pročita.
  */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // error.config čuva originalni zahtev — odatle vidimo koji URL je pukao
+    const isAuthRequest = error.config?.url?.includes('/auth/');
+
+    if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

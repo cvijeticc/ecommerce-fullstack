@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -21,6 +21,21 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  /**
+   * Poruka o grešci stoji 3 sekunde, pa sama nestane.
+   *
+   * Zašto useEffect a ne setTimeout unutar handleSubmit?
+   * Zato što timer mora da se očisti ako korisnik napusti stranicu pre isteka —
+   * inače bi setError pozvao update na komponenti koje više nema.
+   * return funkcija iz useEffect-a je cleanup i React je zove pri unmount-u,
+   * a i pre svakog sledećeg pokretanja efekta (npr. dva neuspela pokušaja zaredom).
+   */
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(() => setError(''), 3000);
+    return () => clearTimeout(timer);
+  }, [error]);
 
   // Ažurira state kada korisnik kuca u input polja
   const handleChange = (e) => {

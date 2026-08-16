@@ -16,8 +16,18 @@ import java.util.Optional;
  */
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
-    // Učitava sve stavke korpe za određenog korisnika
-    List<CartItem> findByUserId(Long userId);
+    /**
+     * Učitava sve stavke korpe za određenog korisnika, redom kojim su dodate.
+     *
+     * OrderById je OBAVEZAN. SQL bez ORDER BY ne garantuje nikakav redosled —
+     * PostgreSQL vraća redove onim redom kojim ih nađe u heap fajlu. Zbog MVCC-a,
+     * UPDATE ne menja postojeći red nego upisuje NOVU verziju reda na kraj heap-a,
+     * pa stavka kojoj se promeni količina "iskoči" na dno liste.
+     *
+     * Pošto je ID generisan sekvencijalno (IDENTITY), ORDER BY id ASC je isto
+     * što i "redosled dodavanja u korpu".
+     */
+    List<CartItem> findByUserIdOrderByIdAsc(Long userId);
 
     // Vraća stavku samo ako pripada tom korisniku (sigurnosna provera)
     Optional<CartItem> findByIdAndUserId(Long cartItemId, Long userId);

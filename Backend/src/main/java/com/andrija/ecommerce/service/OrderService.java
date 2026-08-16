@@ -59,8 +59,8 @@ public class OrderService {
         // Korak 1: Ko pravi porudžbinu?
         User currentUser = getCurrentUser();
 
-        // Korak 2: Učitavamo korpu
-        List<CartItem> cartItems = cartItemRepository.findByUserId(currentUser.getId());
+        // Korak 2: Učitavamo korpu (istim redosledom koji korisnik vidi na ekranu)
+        List<CartItem> cartItems = cartItemRepository.findByUserIdOrderByIdAsc(currentUser.getId());
 
         // Korak 3: Prazna korpa — ne može se napraviti porudžbina
         if (cartItems.isEmpty()) {

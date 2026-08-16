@@ -1,4 +1,26 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { isTokenExpired } from '../utils/jwt';
+
+// Koliko često proveravamo da li je token istekao dok je app otvorena (ms)
+const TOKEN_CHECK_INTERVAL = 60 * 1000;
+
+/**
+ * Čita user/token iz localStorage, ali samo ako token nije istekao.
+ * Bez ovoga bi UI prikazivao "ulogovan" i mesecima nakon isteka tokena,
+ * sve dok korisnik ne pokuša zaštićen zahtev i dobije 401.
+ */
+function readStoredUser() {
+  const token = localStorage.getItem('token');
+  const savedUser = localStorage.getItem('user');
+
+  if (!token || !savedUser || isTokenExpired(token)) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    return null;
+  }
+
+  return JSON.parse(savedUser);
+}
 
 /**
  * AuthContext — globalni state za autentifikaciju.
@@ -23,11 +45,8 @@ const AuthContext = createContext(null);
  * Postavljamo ga u main.jsx oko <App />.
  */
 export function AuthProvider({ children }) {
-  // Inicijalno čitamo user iz localStorage (ako je već ulogovan)
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  // Inicijalno čitamo user iz localStorage (ako je već ulogovan i token važi)
+  const [user, setUser] = useState(readStoredUser);
 
   /**
    * login() — poziva se nakon uspešnog POST /api/auth/login ili /register
@@ -49,6 +68,22 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user');
     setUser(null);
   };
+
+  /**
+   * Periodično (svakih TOKEN_CHECK_INTERVAL) proveravamo da li je token istekao
+   * dok je app otvorena u tabu — bez ovoga bi UI ostao "ulogovan" sve dok
+   * korisnik ne pokuša zaštićen zahtev koji vrati 401.
+   */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const token = localStorage.getItem('token');
+      if (token && isTokenExpired(token)) {
+        logout();
+      }
+    }, TOKEN_CHECK_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, []);
 
   /**
    * isAdmin() — proverava da li je ulogovan korisnik ADMIN.

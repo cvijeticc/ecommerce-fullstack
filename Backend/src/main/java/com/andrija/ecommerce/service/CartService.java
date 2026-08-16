@@ -34,12 +34,13 @@ public class CartService {
     private final UserRepository userRepository;
 
     /**
-     * Vraća sve stavke korpe trenutno ulogovanog korisnika.
+     * Vraća sve stavke korpe trenutno ulogovanog korisnika,
+     * redom kojim su dodavane (vidi komentar uz findByUserIdOrderByIdAsc).
      */
     public List<CartItemDTO> getCart() {
         User currentUser = getCurrentUser();
 
-        return cartItemRepository.findByUserId(currentUser.getId())
+        return cartItemRepository.findByUserIdOrderByIdAsc(currentUser.getId())
                 .stream()
                 .map(this::toDTO)
                 .toList();

@@ -35,7 +35,8 @@ jwt:
   # Default vrednost ispod je SAMO za lokalni razvoj i nalazi se u git-u —
   # u produkciji se OBAVEZNO postavlja JWT_SECRET environment varijabla.
   # Ko zna ovu tajnu može da potpiše validan token za bilo kog korisnika.
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970} 
+  # ovo iznad je entry od hashmape i njegov kljuc je string JWT_SECRET, a vrednost je ovo desno ogromno
   # Trajanje tokena u milisekundama: 86400000 ms = 24 sata
   expiration: ${JWT_EXPIRATION:86400000}
 

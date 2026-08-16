@@ -27,6 +27,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Provera postoje li proizvodi u kategoriji (za validaciju pre brisanja)
     boolean existsByCategoryId(Long categoryId);
 
+    // Da li proizvod sa tim imenom već postoji — koristi DataSeeder da ne duplira
+    // iste proizvode pri svakom pokretanju aplikacije
+    boolean existsByName(String name);
+
     // Pretraga po imenu — paginovano, case-insensitive
     // %:name% znači "sadrži taj string" (LIKE %...%)
     @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
